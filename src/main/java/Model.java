@@ -1,6 +1,8 @@
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Model {
+public class Model implements IUsuariosDAO {
 
     private static Model instance;
     private static Connection conn = null;
@@ -42,23 +44,10 @@ public class Model {
      * @return nombre del usuario
      */
     public String getUserById(int id){
-        String sql = "SELECT name FROM usuarios WHERE id=" + id + " LIMIT 1";
-        String resultado = "";
-
-        try {
-            // recojo los resultados
-            rs = stmt.executeQuery(sql);
-            // loop por los resultados
-            // aunque al poner LIMIT 1 nos garantizamos solo un resultado
-            while (rs.next()) {
-                resultado = rs.getString("name");
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        // devuelvo lo obtenido
-        return resultado;
+        Usuario _usuario = obtenerUsuario(id);
+        return _usuario.getName();
     }
+
 
     /**
      * Devuelve el marcador en funcion del usuario
@@ -66,20 +55,74 @@ public class Model {
      * @return el marcador
      */
     public Integer getScoreByUser(String name) {
-        String sql = "SELECT score FROM usuarios WHERE name='" + name + "' LIMIT 1";
-        Integer resultado = 0;
+        // recojo todos los usuarios
+        List<Usuario> _todos = obtenerUsuarios();
+        // busco segun el nombre
+        for (Usuario _usuario : _todos) {
+            if (_usuario.getName().equals(name)) {
+                return _usuario.getScore();
+            }
+        }
+        // si no lo encuentro devuelvo cero
+        return 0;
+    }
+
+    // métodos para obtener de la base de datos los usuarios
+    // y pasarlos a objetos
+    @Override
+    public List<Usuario> obtenerUsuarios() {
+        String sql = "SELECT * FROM usuarios";
+        List<Usuario> _todos = new ArrayList<>();
+        try {
+            // recojo los resultados
+            rs = stmt.executeQuery(sql);
+            // loop por los usuarios
+            while (rs.next()) {
+                Usuario aux = new Usuario(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getInt("score")
+                );
+
+                _todos.add(aux);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return _todos;
+    }
+
+    @Override
+    public Usuario obtenerUsuario(int id) {
+        String sql = "SELECT * FROM usuarios WHERE id=" + id + " LIMIT 1";
+        Usuario _usuario = null;
+
         try {
             // recojo los resultados
             rs = stmt.executeQuery(sql);
             // loop por los resultados
             // aunque al poner LIMIT 1 nos garantizamos solo un resultado
             while (rs.next()) {
-                resultado = rs.getInt("score");
+                _usuario = new Usuario(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getInt("score")
+                );
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
         // devuelvo lo obtenido
-        return resultado;
+        return _usuario;
+    }
+
+    @Override
+    public void actualizarUsuario(Usuario usuario) {
+        // TODO
+    }
+
+    @Override
+    public void eliminarUsuario(Usuario usuario) {
+        // TODO
     }
 }
