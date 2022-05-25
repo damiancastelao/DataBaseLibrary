@@ -5,6 +5,8 @@ public class Main {
         // recojo la instancia unica
         Model miDB = Model.getInstance();
         // utilizo un método de la instancia
-        Connection miConn = miDB.getConn();
+        String miNombre = miDB.getUserById(1);
+        Integer miScore = miDB.getScoreByUser(miNombre);
+        System.out.println(miNombre + " tiene: " + miScore + " puntos");
     }
 }
